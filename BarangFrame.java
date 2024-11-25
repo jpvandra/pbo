@@ -10,9 +10,8 @@ public class BarangFrame extends JFrame {
     private Connection connection;
 
     public BarangFrame() {
-        connectToDatabase(); // Koneksi ke database
+        connectToDatabase(); 
 
-        // Frame
         setTitle("CRUD Data Barang");
         setSize(600, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -43,7 +42,6 @@ public class BarangFrame extends JFrame {
         txtHarga.setBounds(130, 100, 200, 25);
         add(txtHarga);
 
-        // Tombol Aksi
         JButton btnTambah = new JButton("Tambah");
         btnTambah.setBounds(20, 140, 100, 25);
         add(btnTambah);
@@ -56,7 +54,6 @@ public class BarangFrame extends JFrame {
         btnHapus.setBounds(240, 140, 100, 25);
         add(btnHapus);
 
-        // Tabel
         model = new DefaultTableModel();
         model.addColumn("ID Barang");
         model.addColumn("Nama Barang");
@@ -67,7 +64,6 @@ public class BarangFrame extends JFrame {
         scrollPane.setBounds(20, 180, 540, 150);
         add(scrollPane);
 
-        // Event Listener
         btnTambah.addActionListener(e -> tambahBarang());
         btnEdit.addActionListener(e -> editBarang());
         btnHapus.addActionListener(e -> hapusBarang());
