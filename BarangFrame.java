@@ -1,149 +1,130 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
 public class BarangFrame extends JFrame {
     private JTextField txtIdBarang, txtNamaBarang, txtHarga;
-    private JTable tableBarang;
-    private DefaultTableModel model;
-    private Connection connection;
+    private JButton btnAdd, btnUpdate, btnDelete, btnView;
 
     public BarangFrame() {
-        connectToDatabase(); 
-
         setTitle("CRUD Data Barang");
-        setSize(600, 400);
+        setSize(400, 300);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(null);
+        setLayout(new GridBagLayout());
 
-        JLabel lblId = new JLabel("ID Barang:");
-        lblId.setBounds(20, 20, 100, 25);
-        add(lblId);
+        // Atur GridBagConstraints untuk mengatur posisi elemen
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        txtIdBarang = new JTextField();
-        txtIdBarang.setBounds(130, 20, 200, 25);
-        add(txtIdBarang);
+        // Baris pertama: Label dan TextField ID Barang
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(new JLabel("ID Barang:"), gbc);
 
-        JLabel lblNama = new JLabel("Nama Barang:");
-        lblNama.setBounds(20, 60, 100, 25);
-        add(lblNama);
+        gbc.gridx = 1;
+        txtIdBarang = new JTextField(15);
+        add(txtIdBarang, gbc);
 
-        txtNamaBarang = new JTextField();
-        txtNamaBarang.setBounds(130, 60, 200, 25);
-        add(txtNamaBarang);
+        // Baris kedua: Label dan TextField Nama Barang
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Nama Barang:"), gbc);
 
-        JLabel lblHarga = new JLabel("Harga:");
-        lblHarga.setBounds(20, 100, 100, 25);
-        add(lblHarga);
+        gbc.gridx = 1;
+        txtNamaBarang = new JTextField(15);
+        add(txtNamaBarang, gbc);
 
-        txtHarga = new JTextField();
-        txtHarga.setBounds(130, 100, 200, 25);
-        add(txtHarga);
+        // Baris ketiga: Label dan TextField Harga Barang
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(new JLabel("Harga Barang:"), gbc);
 
-        JButton btnTambah = new JButton("Tambah");
-        btnTambah.setBounds(20, 140, 100, 25);
-        add(btnTambah);
+        gbc.gridx = 1;
+        txtHarga = new JTextField(15);
+        add(txtHarga, gbc);
 
-        JButton btnEdit = new JButton("Edit");
-        btnEdit.setBounds(130, 140, 100, 25);
-        add(btnEdit);
+        // Baris keempat: Tombol CRUD
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 5, 5)); // Panel untuk tombol
+        btnAdd = new JButton("Tambah");
+        btnUpdate = new JButton("Ubah");
+        btnDelete = new JButton("Hapus");
+        btnView = new JButton("Lihat");
 
-        JButton btnHapus = new JButton("Hapus");
-        btnHapus.setBounds(240, 140, 100, 25);
-        add(btnHapus);
+        buttonPanel.add(btnAdd);
+        buttonPanel.add(btnUpdate);
+        buttonPanel.add(btnDelete);
+        buttonPanel.add(btnView);
 
-        model = new DefaultTableModel();
-        model.addColumn("ID Barang");
-        model.addColumn("Nama Barang");
-        model.addColumn("Harga");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        add(buttonPanel, gbc);
 
-        tableBarang = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(tableBarang);
-        scrollPane.setBounds(20, 180, 540, 150);
-        add(scrollPane);
+        // Tambahkan ActionListener untuk tombol
+        btnAdd.addActionListener(e -> addBarang());
+        btnUpdate.addActionListener(e -> updateBarang());
+        btnDelete.addActionListener(e -> deleteBarang());
+        btnView.addActionListener(e -> viewBarang());
 
-        btnTambah.addActionListener(e -> tambahBarang());
-        btnEdit.addActionListener(e -> editBarang());
-        btnHapus.addActionListener(e -> hapusBarang());
-        tableBarang.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                int row = tableBarang.getSelectedRow();
-                txtIdBarang.setText(model.getValueAt(row, 0).toString());
-                txtNamaBarang.setText(model.getValueAt(row, 1).toString());
-                txtHarga.setText(model.getValueAt(row, 2).toString());
-            }
-        });
-
-        loadData();
         setVisible(true);
     }
 
-    private void connectToDatabase() {
-        try {
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/toko", "root", "");
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Koneksi database gagal!");
+    private void addBarang() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "INSERT INTO data_barang (nama, harga) VALUES (?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, txtNamaBarang.getText());
+            stmt.setDouble(2, Double.parseDouble(txtHarga.getText()));
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Barang berhasil ditambahkan!");
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
-    private void loadData() {
-        model.setRowCount(0);
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM data_barang");
-            while (resultSet.next()) {
-                model.addRow(new Object[]{
-                        resultSet.getString("id_barang"),
-                        resultSet.getString("nama_barang"),
-                        resultSet.getDouble("harga")
-                });
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal memuat data barang!");
+    private void updateBarang() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE data_barang SET nama = ?, harga = ? WHERE id_barang = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, txtNamaBarang.getText());
+            stmt.setDouble(2, Double.parseDouble(txtHarga.getText()));
+            stmt.setInt(3, Integer.parseInt(txtIdBarang.getText()));
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Barang berhasil diperbarui!");
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
-    private void tambahBarang() {
-        try {
-            String sql = "INSERT INTO data_barang (id_barang, nama_barang, harga) VALUES (?, ?, ?)";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, txtIdBarang.getText());
-            ps.setString(2, txtNamaBarang.getText());
-            ps.setDouble(3, Double.parseDouble(txtHarga.getText()));
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Data barang berhasil ditambahkan!");
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal menambahkan data barang!");
-        }
-    }
-
-    private void editBarang() {
-        try {
-            String sql = "UPDATE data_barang SET nama_barang = ?, harga = ? WHERE id_barang = ?";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, txtNamaBarang.getText());
-            ps.setDouble(2, Double.parseDouble(txtHarga.getText()));
-            ps.setString(3, txtIdBarang.getText());
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Data barang berhasil diupdate!");
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal mengupdate data barang!");
-        }
-    }
-
-    private void hapusBarang() {
-        try {
+    private void deleteBarang() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
             String sql = "DELETE FROM data_barang WHERE id_barang = ?";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, txtIdBarang.getText());
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Data barang berhasil dihapus!");
-            loadData();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal menghapus data barang!");
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, Integer.parseInt(txtIdBarang.getText()));
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Barang berhasil dihapus!");
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
+
+    private void viewBarang() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT * FROM data_barang";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            StringBuilder result = new StringBuilder("ID Barang\tNama Barang\tHarga\n");
+            while (rs.next()) {
+                result.append(rs.getInt("id_barang")).append("\t\t")
+                      .append(rs.getString("nama")).append("\t\t")
+                      .append(rs.getDouble("harga")).append("\n");
+            }
+            JOptionPane.showMessageDialog(this, result.toString());
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
