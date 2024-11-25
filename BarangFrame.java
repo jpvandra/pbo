@@ -17,7 +17,6 @@ public class BarangFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(null);
 
-        // Komponen Input
         JLabel lblId = new JLabel("ID Barang:");
         lblId.setBounds(20, 20, 100, 25);
         add(lblId);
