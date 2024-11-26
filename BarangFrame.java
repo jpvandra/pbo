@@ -73,7 +73,7 @@ public class BarangFrame extends JFrame {
 
     private void addBarang() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "INSERT INTO data_barang (nama, harga) VALUES (?, ?)";
+            String sql = "INSERT INTO data_barang (nama_barang, harga) VALUES (?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, txtNamaBarang.getText());
             stmt.setDouble(2, Double.parseDouble(txtHarga.getText()));
@@ -86,7 +86,7 @@ public class BarangFrame extends JFrame {
 
     private void updateBarang() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "UPDATE data_barang SET nama = ?, harga = ? WHERE id_barang = ?";
+            String sql = "UPDATE data_barang SET nama_barang = ?, harga = ? WHERE idbarang = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, txtNamaBarang.getText());
             stmt.setDouble(2, Double.parseDouble(txtHarga.getText()));
@@ -100,7 +100,7 @@ public class BarangFrame extends JFrame {
 
     private void deleteBarang() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "DELETE FROM data_barang WHERE id_barang = ?";
+            String sql = "DELETE FROM data_barang WHERE idbarang = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, Integer.parseInt(txtIdBarang.getText()));
             stmt.executeUpdate();
